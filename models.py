@@ -60,11 +60,22 @@ class List(Field):
 class ModelMeta(type):
 
     def __new__(cls, name, bases, attrs):
+        orm_fields = []
         for k, v in attrs.items():
             if isinstance(v, Field):
                 v.name = k
+                orm_fields.append(k.strip('_'))
+        attrs['_fields'] = orm_fields
         return super(ModelMeta, cls).__new__(cls, name, bases, attrs)
 
 
 class Model(metaclass=ModelMeta):
-    pass
+    def __init__(self, **kwargs):
+        fields = self._fields
+        for k, v in kwargs.items():
+            if k not in fields:
+                raise ValueError(
+                    '{} not an attribute of {}'
+                    .format(k, self.__class__.__name__)
+                )
+            setattr(self, k, v)
