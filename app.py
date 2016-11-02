@@ -1,6 +1,6 @@
 import hashlib
 
-import models
+from orm import models
 
 
 class User(models.Model):
